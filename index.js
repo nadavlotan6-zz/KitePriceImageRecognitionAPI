@@ -19,7 +19,7 @@ global.picture_url;
 /**
  * Clarifai API
  */
-function predictColors() {
+function predictColors(res) {
   clarifai.models.predict(Clarifai.COLOR_MODEL, picture_url).then(
     function (response) {
       jsonPath = response.outputs[0].data.colors;
@@ -37,13 +37,16 @@ function predictColors() {
       for (let color in response.outputs[0].data.colors) {
         console.log("The Raw Description of a Color:");
         console.log(jsonPath[color].raw_hex + "\n");
-        console.log("A W3C Decription of a color:");
-        console.log(jsonPath[color].w3c.hex);
-        console.log(jsonPath[color].w3c.name);
-        console.log(jsonPath[color].value);
+        // console.log("A W3C Decription of a color:");
+        // console.log(jsonPath[color].w3c.hex);
+        // console.log(jsonPath[color].w3c.name);
+        console.log("The percentage of the color in the image:");
+        console.log(jsonPath[color].value*100 + "%");
         console.log("\n---------------------------------\n")
+        delete jsonPath[color].w3c;
       }
 
+      res.status(200).send(jsonPath);
 
     },
     function (err) {
@@ -56,11 +59,24 @@ app.get('/new/*', (req, res) => {
   picture_url = req.params[0];
 
   console.log("The picture URL is:" + picture_url)
-  predictColors();
+  predictColors(res);
 
-  res.status(200).send(jsonPath);
-  // res.send(200);
+  // while(isEmptyObject(jsonPath)) {
+  // while(typeof jsonPath === "undefined") {
+  //   // res.send(200);
+  // }
+  // res.status(200).send(jsonPath);  
 });
+
+
+function isEmptyObject(obj) {
+  for (var key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      return false;
+    }
+  }
+  return true;
+}
 
 app.get('/', (req, res) => {
   res.send(200, "Please use https://kitepride.herokuapp.com/new/{imageurl} for your request!");
