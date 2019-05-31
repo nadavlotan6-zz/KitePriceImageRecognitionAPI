@@ -40,6 +40,7 @@ function predictColors(res) {
         // console.log("A W3C Decription of a color:");
         // console.log(jsonPath[color].w3c.hex);
         // console.log(jsonPath[color].w3c.name);
+        jsonPath[color].value = Math.round(jsonPath[color].value*100 * 100) / 100 + "%"
         console.log("The percentage of the color in the image:");
         console.log(jsonPath[color].value*100 + "%");
         console.log("\n---------------------------------\n")
