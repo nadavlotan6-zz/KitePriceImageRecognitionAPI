@@ -57,7 +57,7 @@ app.get('/new/*', (req, res) => {
   console.log("The picture URL is:" + picture_url)
   predictColors();
 
-  res.send(200);
+  res.status(200).send(200)
 });
 
 app.get('/', (req, res) => {
