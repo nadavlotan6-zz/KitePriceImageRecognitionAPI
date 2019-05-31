@@ -61,6 +61,6 @@ app.get('/new/*', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.send(200, "Please use herokuapp.com/new/:imageurl for your request!");
+  res.send(200, "Please use https://kitepride.herokuapp.com/new/{imageurl} for your request!");
 });
 app.listen(3000);
