@@ -3,6 +3,7 @@ const Clarifai = require('clarifai');
 const express = require('express')
 const app = express();
 const http = require('http');
+const PORT = process.env.PORT || 3000;
 
 // initialize with your api key. This will also work in your browser via http://browserify.org/
 const clarifai = new Clarifai.App({
@@ -57,10 +58,11 @@ app.get('/new/*', (req, res) => {
   console.log("The picture URL is:" + picture_url)
   predictColors();
 
-  res.status(200).send(200)
+  // res.status(200).send(200);
+  res.send(200);
 });
 
 app.get('/', (req, res) => {
   res.send(200, "Please use https://kitepride.herokuapp.com/new/{imageurl} for your request!");
 });
-app.listen(3000);
+app.listen(PORT);
