@@ -4,6 +4,11 @@ const express = require('express')
 const app = express();
 const http = require('http');
 const PORT = process.env.PORT || 3000;
+const fs = require('fs');
+const readline = require('readline');
+const {
+  google
+} = require('googleapis');
 
 // initialize with your api key. This will also work in your browser via http://browserify.org/
 const clarifai = new Clarifai.App({
@@ -15,6 +20,8 @@ const clarifai = new Clarifai.App({
 // let picture_url = 'https://scontent.ftlv2-1.fna.fbcdn.net/v/t45.5328-0/p180x540/23905031_1480230435386809_4095124082624823296_n.jpg?_nc_cat=104&_nc_ht=scontent.ftlv2-1.fna&oh=b73e0ab965f8b4bc4dae64d0fff7455b&oe=5D8E6EF1'
 global.jsonPath;
 global.picture_url;
+global.hexArray = [];
+// global.percentageArray = [];
 
 /**
  * Clarifai API
@@ -37,17 +44,29 @@ function predictColors(res) {
       for (let color in response.outputs[0].data.colors) {
         console.log("The Raw Description of a Color:");
         console.log(jsonPath[color].raw_hex + "\n");
+        hexArray.push(jsonPath[color].raw_hex);
+        hexArray.push(jsonPath[color].value)
+        // percentageArray.push(jsonPath[color].value)
         // console.log("A W3C Decription of a color:");
         // console.log(jsonPath[color].w3c.hex);
         // console.log(jsonPath[color].w3c.name);
-        jsonPath[color].value = Math.round(jsonPath[color].value*100 * 100) / 100 + "%"
+        jsonPath[color].value = Math.round(jsonPath[color].value * 100 * 100) / 100 + "%"
         console.log("The percentage of the color in the image:");
-        console.log(jsonPath[color].value*100 + "%");
+        console.log(jsonPath[color].value + "%");
         console.log("\n---------------------------------\n")
         delete jsonPath[color].w3c;
       }
 
+      console.log(hexArray);
+      // console.log(percentageArray);
       res.status(200).send(jsonPath);
+
+      // Load client secrets from a local file.
+      fs.readFile('credentials.json', (err, content) => {
+        if (err) return console.log('Error loading client secret file:', err);
+        // Authorize a client with credentials, then call the Google Sheets API.
+        authorize(JSON.parse(content), updateSheets);
+      });
 
     },
     function (err) {
@@ -57,16 +76,14 @@ function predictColors(res) {
 }
 
 app.get('/new/*', (req, res) => {
+  hexArray = [];
   picture_url = req.params[0];
 
   console.log("The picture URL is:" + picture_url)
-  predictColors(res);
 
-  // while(isEmptyObject(jsonPath)) {
-  // while(typeof jsonPath === "undefined") {
-  //   // res.send(200);
-  // }
-  // res.status(200).send(jsonPath);  
+
+
+  predictColors(res);
 });
 
 
@@ -83,3 +100,97 @@ app.get('/', (req, res) => {
   res.send(200, "Please use https://kitepride.herokuapp.com/new/{imageurl} for your request!");
 });
 app.listen(PORT);
+
+
+// If modifying these scopes, delete token.json.
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
+// The file token.json stores the user's access and refresh tokens, and is
+// created automatically when the authorization flow completes for the first
+// time.
+const TOKEN_PATH = 'token.json';
+
+
+/**
+ * Create an OAuth2 client with the given credentials, and then execute the
+ * given callback function.
+ * @param {Object} credentials The authorization client credentials.
+ * @param {function} callback The callback to call with the authorized client.
+ */
+function authorize(credentials, callback) {
+  const {
+    client_secret,
+    client_id,
+    redirect_uris
+  } = credentials.installed;
+  const oAuth2Client = new google.auth.OAuth2(
+    client_id, client_secret, redirect_uris[0]);
+
+  // Check if we have previously stored a token.
+  fs.readFile(TOKEN_PATH, (err, token) => {
+    if (err) return getNewToken(oAuth2Client, callback);
+    oAuth2Client.setCredentials(JSON.parse(token));
+    callback(oAuth2Client);
+  });
+}
+
+/**
+ * Get and store new token after prompting for user authorization, and then
+ * execute the given callback with the authorized OAuth2 client.
+ * @param {google.auth.OAuth2} oAuth2Client The OAuth2 client to get token for.
+ * @param {getEventsCallback} callback The callback for the authorized client.
+ */
+function getNewToken(oAuth2Client, callback) {
+  const authUrl = oAuth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: SCOPES,
+  });
+  console.log('Authorize this app by visiting this url:', authUrl);
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+  rl.question('Enter the code from that page here: ', (code) => {
+    rl.close();
+    oAuth2Client.getToken(code, (err, token) => {
+      if (err) return console.error('Error while trying to retrieve access token', err);
+      oAuth2Client.setCredentials(token);
+      // Store the token to disk for later program executions
+      fs.writeFile(TOKEN_PATH, JSON.stringify(token), (err) => {
+        if (err) return console.error(err);
+        console.log('Token stored to', TOKEN_PATH);
+      });
+      callback(oAuth2Client);
+    });
+  });
+}
+
+/**
+ * Prints the names and majors of students in a sample spreadsheet:
+ * @see https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
+ * @param {google.auth.OAuth2} auth The authenticated Google OAuth client.
+ */
+function updateSheets(auth) {
+  const sheets = google.sheets({
+    version: 'v4',
+    auth
+  });
+  let values = [
+    hexArray
+  ];
+  let resource = {
+    values,
+  };
+  sheets.spreadsheets.values.append({
+    spreadsheetId: '1nAxVgApnsDnSWie_BEyKMzWCTU8TS91XRzL19EtPdzY',
+    range: 'Color Tagging!A:M',
+    valueInputOption: "USER_ENTERED",
+    resource,
+  }, (err, res) => {
+    if (err) {
+      // Handle error.
+      console.log(err);
+    } else {
+      console.log(`${result.updates.updatedCells} cells appended.`);
+    }
+  });
+}
