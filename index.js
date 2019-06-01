@@ -182,7 +182,7 @@ function updateSheets(auth) {
   };
   sheets.spreadsheets.values.append({
     spreadsheetId: '1nAxVgApnsDnSWie_BEyKMzWCTU8TS91XRzL19EtPdzY',
-    range: 'Color Tagging!A:M',
+    range: 'Color Tagging!A:L',
     valueInputOption: "USER_ENTERED",
     resource,
   }, (err, res) => {
