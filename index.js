@@ -21,6 +21,7 @@ const clarifai = new Clarifai.App({
 global.jsonPath;
 global.picture_url;
 global.hexArray = [];
+global.productType = "";
 // global.percentageArray = [];
 
 async function updateProduct() {
@@ -205,12 +206,14 @@ function updateSheets(auth) {
       // Handle error.
       console.log(err);
       hexArray = [];
+      
     } else {
       console.log(`${result.updates.updatedCells} cells appended.`);
       hexArray = [];
     }
   });
   hexArray = [];
+  hexArray.push(productType);
 }
 
 function readSheet(auth) {
@@ -225,7 +228,8 @@ function readSheet(auth) {
     if (err) return console.log('The API returned an error: ' + err);
     const rows = res.data.values;
     rows.map((row) => {
-      hexArray.push(rows[0][0]);
+      productType = rows[0][0];
+      hexArray[0] = productType;
       // console.log(rows[0][0]);
     });
   });
