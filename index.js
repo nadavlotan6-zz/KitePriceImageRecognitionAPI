@@ -23,6 +23,16 @@ global.picture_url;
 global.hexArray = [];
 // global.percentageArray = [];
 
+async function updateProduct() {
+  fs.readFile('credentials.json', (err, content) => {
+    if (err) return console.log('Error loading client secret file:', err);
+    // Authorize a client with credentials, then call the Google Sheets API.
+    authorize(JSON.parse(content), readSheet);
+  });
+}
+
+setInterval(updateProduct, 5000);
+
 /**
  * Clarifai API
  */
@@ -76,14 +86,19 @@ function predictColors(res) {
 }
 
 app.get('/new/*', (req, res) => {
-  hexArray = [];
   picture_url = req.params[0];
+  fs.readFile('credentials.json', (err, content) => {
+    if (err) return console.log('Error loading client secret file:', err);
+    // Authorize a client with credentials, then call the Google Sheets API.
+    authorize(JSON.parse(content), readSheet);
+
+  });
 
   console.log("The picture URL is:" + picture_url)
-
-
-
-  predictColors(res);
+  setTimeout(() => {
+    console.log('timeout beyond time');
+    predictColors(res);
+  }, 3000);
 });
 
 
@@ -182,15 +197,36 @@ function updateSheets(auth) {
   };
   sheets.spreadsheets.values.append({
     spreadsheetId: '1nAxVgApnsDnSWie_BEyKMzWCTU8TS91XRzL19EtPdzY',
-    range: 'Color Tagging!A:L',
+    range: 'Color Tagging!A:I',
     valueInputOption: "USER_ENTERED",
     resource,
   }, (err, res) => {
     if (err) {
       // Handle error.
       console.log(err);
+      hexArray = [];
     } else {
       console.log(`${result.updates.updatedCells} cells appended.`);
+      hexArray = [];
     }
+  });
+  hexArray = [];
+}
+
+function readSheet(auth) {
+  const sheets = google.sheets({
+    version: 'v4',
+    auth
+  });
+  sheets.spreadsheets.values.get({
+    spreadsheetId: '1nAxVgApnsDnSWie_BEyKMzWCTU8TS91XRzL19EtPdzY',
+    range: 'Product Type!A2'
+  }, (err, res) => {
+    if (err) return console.log('The API returned an error: ' + err);
+    const rows = res.data.values;
+    rows.map((row) => {
+      hexArray.push(rows[0][0]);
+      // console.log(rows[0][0]);
+    });
   });
 }
