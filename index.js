@@ -22,6 +22,8 @@ global.jsonPath;
 global.picture_url;
 global.hexArray = [];
 global.productType = "";
+global.barcode = "";
+global.productID = "";
 // global.percentageArray = [];
 
 async function updateProduct() {
@@ -214,6 +216,8 @@ function updateSheets(auth) {
   });
   hexArray = [];
   hexArray.push(productType);
+  hexArray.push(barcode);
+  hexArray.push(productID);
 }
 
 function readSheet(auth) {
@@ -223,13 +227,17 @@ function readSheet(auth) {
   });
   sheets.spreadsheets.values.get({
     spreadsheetId: '1nAxVgApnsDnSWie_BEyKMzWCTU8TS91XRzL19EtPdzY',
-    range: 'Product Type!A2'
+    range: 'Product Type!A2:A4'
   }, (err, res) => {
     if (err) return console.log('The API returned an error: ' + err);
     const rows = res.data.values;
     rows.map((row) => {
       productType = rows[0][0];
+      barcode = rows[0][1];
+      productID = rows[0][2];
       hexArray[0] = productType;
+      hexArray[1] = barcode;
+      hexArray[2] = productID;
       // console.log(rows[0][0]);
     });
   });
