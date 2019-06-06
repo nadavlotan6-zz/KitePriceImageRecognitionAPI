@@ -216,8 +216,8 @@ function updateSheets(auth) {
   });
   hexArray = [];
   hexArray.push(productType);
-  hexArray.push(barcode);
-  hexArray.push(productID);
+  // hexArray.push(barcode);
+  // hexArray.push(productID);
 }
 
 function readSheet(auth) {
@@ -231,14 +231,21 @@ function readSheet(auth) {
   }, (err, res) => {
     if (err) return console.log('The API returned an error: ' + err);
     const rows = res.data.values;
+    // console.log(rows[0][0]);
+    // console.log(rows[1][0]);
+    // console.log(rows[2][0]);
+    
     rows.map((row) => {
       productType = rows[0][0];
-      barcode = rows[0][1];
-      productID = rows[0][2];
+      barcode = rows[1][0];
+      productID = rows[2][0];
       hexArray[0] = productType;
       hexArray[1] = barcode;
       hexArray[2] = productID;
-      // console.log(rows[0][0]);
+      console.log(rows[0][0]);
+
+      console.log(rows[1][0]);
+      console.log(rows[2][0]);
     });
   });
 }
