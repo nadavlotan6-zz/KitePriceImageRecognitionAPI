@@ -208,7 +208,7 @@ function updateSheets(auth) {
       // Handle error.
       console.log(err);
       hexArray = [];
-      
+
     } else {
       console.log(`${result.updates.updatedCells} cells appended.`);
       hexArray = [];
@@ -221,31 +221,37 @@ function updateSheets(auth) {
 }
 
 function readSheet(auth) {
-  const sheets = google.sheets({
-    version: 'v4',
-    auth
-  });
-  sheets.spreadsheets.values.get({
-    spreadsheetId: '1nAxVgApnsDnSWie_BEyKMzWCTU8TS91XRzL19EtPdzY',
-    range: 'Product Type!A2:A4'
-  }, (err, res) => {
-    if (err) return console.log('The API returned an error: ' + err);
-    const rows = res.data.values;
-    // console.log(rows[0][0]);
-    // console.log(rows[1][0]);
-    // console.log(rows[2][0]);
-    
-    rows.map((row) => {
-      productType = rows[0][0];
-      barcode = rows[1][0];
-      productID = rows[2][0];
-      hexArray[0] = productType;
-      hexArray[1] = barcode;
-      hexArray[2] = productID;
-      console.log(rows[0][0]);
-
-      console.log(rows[1][0]);
-      console.log(rows[2][0]);
+  try {
+    const sheets = google.sheets({
+      version: 'v4',
+      auth
     });
-  });
+    sheets.spreadsheets.values.get({
+      spreadsheetId: '1nAxVgApnsDnSWie_BEyKMzWCTU8TS91XRzL19EtPdzY',
+      range: 'Product Type!A2:A4'
+    }, (err, res) => {
+      if (err) return console.log('The API returned an error: ' + err);
+      const rows = res.data.values;
+
+
+      // console.log(rows[0][0]);
+      // console.log(rows[1][0]);
+      // console.log(rows[2][0]);
+
+      rows.map((row) => {
+        productType = rows[0][0];
+        barcode = rows[1][0];
+        productID = rows[2][0];
+        hexArray[0] = productType;
+        hexArray[1] = barcode;
+        hexArray[2] = productID;
+        console.log(rows[0][0]);
+
+        console.log(rows[1][0]);
+        console.log(rows[2][0]);
+      });
+    });
+  } catch (err) {
+    console.log(err);
+  }
 }
