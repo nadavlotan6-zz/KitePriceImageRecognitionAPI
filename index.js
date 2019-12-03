@@ -200,7 +200,7 @@ function updateSheets(auth) {
   };
   sheets.spreadsheets.values.append({
     spreadsheetId: '1nAxVgApnsDnSWie_BEyKMzWCTU8TS91XRzL19EtPdzY',
-    range: 'Color Tagging!A:I',
+    range: 'Color Tagging!D:I',
     valueInputOption: "USER_ENTERED",
     resource,
   }, (err, res) => {
@@ -215,13 +215,14 @@ function updateSheets(auth) {
     }
   });
   hexArray = [];
-  hexArray.push(productType);
+  // hexArray.push(productType);
   // hexArray.push(barcode);
   // hexArray.push(productID);
 }
 
 function readSheet(auth) {
-  try {
+
+  // try {
     const sheets = google.sheets({
       version: 'v4',
       auth
@@ -234,24 +235,24 @@ function readSheet(auth) {
       const rows = res.data.values;
 
 
-      // console.log(rows[0][0]);
-      // console.log(rows[1][0]);
-      // console.log(rows[2][0]);
+      console.log(rows[0][0]);
+      console.log(rows[1][0]);
+      console.log(rows[2][0]);
 
       rows.map((row) => {
         productType = rows[0][0];
         barcode = rows[1][0];
         productID = rows[2][0];
-        hexArray[0] = productType;
-        hexArray[1] = barcode;
-        hexArray[2] = productID;
+        // hexArray[0] = productType;
+        // hexArray[1] = barcode;
+        // hexArray[2] = productID;
         console.log(rows[0][0]);
 
         console.log(rows[1][0]);
         console.log(rows[2][0]);
       });
     });
-  } catch (err) {
-    console.log(err);
-  }
+  // } catch (err) {
+  //   console.log(err);
+  // }
 }
